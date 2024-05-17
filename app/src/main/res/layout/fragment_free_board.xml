@@ -42,7 +42,7 @@
 
                 <androidx.appcompat.widget.SearchView
                     android:id="@+id/post_search_view"
-                    android:layout_width="360dp"
+                    android:layout_width="350dp"
                     android:layout_height="wrap_content"
 
                     app:closeIcon="@color/black"

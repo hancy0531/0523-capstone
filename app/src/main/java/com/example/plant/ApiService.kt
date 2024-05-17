@@ -20,8 +20,8 @@ interface ApiService {
         @Part("board_type") board_type: RequestBody,
         @Part("post_title") post_title: RequestBody,
         @Part("post_content") post_content: RequestBody,
-        @Part("post_writer") post_writer: RequestBody,
-        @Part("post_date") post_date: RequestBody
+        @Part("post_writer") post_writer: RequestBody
+        //@Part("post_date") post_date: RequestBody
     ): Response<String>
 
     //게시물 수정 메소드
@@ -33,8 +33,8 @@ interface ApiService {
         @Part("board_type") board_type: RequestBody,
         @Part("post_title") post_title: RequestBody,
         @Part("post_content") post_content: RequestBody,
-        @Part("post_writer") post_writer: RequestBody,
-        @Part("post_date") post_date: RequestBody
+        @Part("post_writer") post_writer: RequestBody
+        //@Part("post_date") post_date: RequestBody
     ): Response<String>
 
     //게시물 삭제 메소드

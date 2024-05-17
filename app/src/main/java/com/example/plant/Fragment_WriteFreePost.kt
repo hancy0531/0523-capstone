@@ -138,10 +138,10 @@ class Fragment_WriteFreePost : Fragment() {
                 val content = contentText.text.toString()
 
                 if (title.isNotEmpty() || content.isNotEmpty()) {
-                    val currentDate = Calendar.getInstance().time
-                    val dateFormat = SimpleDateFormat("yyyy / MM / dd", Locale.getDefault())
-                    val formattedDate = dateFormat.format(currentDate)
-                    val postDate = formattedDate
+//                    val currentDate = Calendar.getInstance().time
+//                    val dateFormat = SimpleDateFormat("yyyy / MM / dd", Locale.getDefault())
+//                    val formattedDate = dateFormat.format(currentDate)
+//                    val postDate = formattedDate
 
                     val imageDrawable = imageView.drawable as? BitmapDrawable
                     val imageBitmap = imageDrawable?.bitmap
@@ -149,9 +149,9 @@ class Fragment_WriteFreePost : Fragment() {
 //                        insertPost(it, writer, title, content, postDate)
 //                    }
                     if (imageBitmap != null) {
-                        insertPost(imageBitmap, writer, title, content, postDate)
+                        insertPost(imageBitmap, writer, title, content)
                     } else {
-                        insertPost2(writer, title, content, postDate)
+                        insertPost2(writer, title, content)
                     }
                     // 데이터베이스에 데이터 삽입
                     //insertPost(writer, title, content, postDate)
@@ -206,16 +206,16 @@ class Fragment_WriteFreePost : Fragment() {
                 val content = contentText.text.toString()
 
                 if (title.isNotEmpty() || content.isNotEmpty()) {
-                    val currentDate = Calendar.getInstance().time
-                    val dateFormat = SimpleDateFormat("yyyy / MM / dd", Locale.getDefault())
-                    val formattedDate = dateFormat.format(currentDate)
-                    val postDate = formattedDate
+//                    val currentDate = Calendar.getInstance().time
+//                    val dateFormat = SimpleDateFormat("yyyy / MM / dd", Locale.getDefault())
+//                    val formattedDate = dateFormat.format(currentDate)
+//                    val postDate = formattedDate
 
                     //이미지 데이터
                     val imageDrawable = imageView.drawable as? BitmapDrawable
                     val imageBitmap = imageDrawable?.bitmap
                     if (imageBitmap != null) {
-                        editPost(imageBitmap, writer, title, content, postDate)
+                        editPost(imageBitmap, writer, title, content)
                     }
                     // 데이터베이스에 데이터 삽입
                     //editPost(writer, title, content, postDate)
@@ -228,7 +228,7 @@ class Fragment_WriteFreePost : Fragment() {
 
 
     //retrofit으로 post 저장
-    private fun insertPost(imageBitmap: Bitmap, writer: String, title: String, content: String, date: String) {
+    private fun insertPost(imageBitmap: Bitmap, writer: String, title: String, content: String) {
         GlobalScope.launch(Dispatchers.IO) {
             val gson = GsonBuilder().setLenient().create()
             val retrofit = Retrofit.Builder()
@@ -254,11 +254,11 @@ class Fragment_WriteFreePost : Fragment() {
             val writerBody = RequestBody.create(MediaType.parse("text/plain"), writer)
             val titleBody = RequestBody.create(MediaType.parse("text/plain"), title)
             val contentBody = RequestBody.create(MediaType.parse("text/plain"), content)
-            val dateBody = RequestBody.create(MediaType.parse("text/plain"), date)
+            //val dateBody = RequestBody.create(MediaType.parse("text/plain"), date)
 
             // apiService.insertpost 호출을 suspend 함수로 변경
             try {
-                val response = apiService.insertpost(body, boardtypeBody, titleBody, contentBody, writerBody, dateBody)
+                val response = apiService.insertpost(body, boardtypeBody, titleBody, contentBody, writerBody)
 
                 // Response 객체에서 성공 여부 확인
                 if (response.isSuccessful) {
@@ -282,7 +282,7 @@ class Fragment_WriteFreePost : Fragment() {
 
 
     //이미지 없이 게시물 저장
-    private fun insertPost2(writer: String, title: String, content: String, date: String) {
+    private fun insertPost2(writer: String, title: String, content: String) {
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 val url = URL("http://10.0.2.2/insertpost2.php")
@@ -293,8 +293,8 @@ class Fragment_WriteFreePost : Fragment() {
                 val postData = URLEncoder.encode("board_type", "UTF-8") + "=" + URLEncoder.encode(board_type.toString(), "UTF-8") +
                         "&" + URLEncoder.encode("post_title", "UTF-8") + "=" + URLEncoder.encode(title, "UTF-8") +
                         "&" + URLEncoder.encode("post_content", "UTF-8") + "=" + URLEncoder.encode(content, "UTF-8") +
-                        "&" + URLEncoder.encode("post_writer", "UTF-8") + "=" + URLEncoder.encode(writer, "UTF-8") +
-                        "&" + URLEncoder.encode("post_date", "UTF-8") + "=" + URLEncoder.encode(date, "UTF-8")
+                        "&" + URLEncoder.encode("post_writer", "UTF-8") + "=" + URLEncoder.encode(writer, "UTF-8")
+                        //"&" + URLEncoder.encode("post_date", "UTF-8") + "=" + URLEncoder.encode(date, "UTF-8")
 
                 val outputStream = OutputStreamWriter(connection.outputStream)
                 outputStream.write(postData)
@@ -319,7 +319,7 @@ class Fragment_WriteFreePost : Fragment() {
 
 
     //retrofit으로 이미지 수정
-    private fun editPost(imageBitmap: Bitmap, writer: String, title: String, content: String, date: String) {
+    private fun editPost(imageBitmap: Bitmap, writer: String, title: String, content: String) {
         GlobalScope.launch(Dispatchers.IO) {
             val gson = GsonBuilder().setLenient().create()
             val retrofit = Retrofit.Builder()
@@ -346,11 +346,11 @@ class Fragment_WriteFreePost : Fragment() {
             val writerBody = RequestBody.create(MediaType.parse("text/plain"), writer)
             val titleBody = RequestBody.create(MediaType.parse("text/plain"), title)
             val contentBody = RequestBody.create(MediaType.parse("text/plain"), content)
-            val dateBody = RequestBody.create(MediaType.parse("text/plain"), date)
+            //val dateBody = RequestBody.create(MediaType.parse("text/plain"), date)
 
             // apiService.editpost 호출을 suspend 함수로 변경
             try {
-                val response = apiService.editpost(body, numBody, boardtypeBody, titleBody, contentBody, writerBody, dateBody)
+                val response = apiService.editpost(body, numBody, boardtypeBody, titleBody, contentBody, writerBody)
 
                 // Response 객체에서 성공 여부 확인
                 if (response.isSuccessful) {
