@@ -1,5 +1,6 @@
 package com.example.plant
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 
 class PlantEnrollViewModel: ViewModel() {
@@ -15,4 +16,5 @@ class PlantEnrollViewModel: ViewModel() {
     var pminute: Int = 0
     var ptemp: String = ""
     var phumid: String = ""
+    var imageuri: Uri? = null
 }

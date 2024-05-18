@@ -1,9 +1,15 @@
 package com.example.plant
 
+import ApiService
+import ImageUploadResponse
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
+import android.database.Cursor
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -18,7 +24,17 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.io.BufferedReader
+import java.io.File
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
@@ -28,45 +44,16 @@ class Fragment_Enroll4 : Fragment() {
     private var userEmail: String? = null
     private lateinit var enrollBtn: Button
     private lateinit var viewModel: PlantEnrollViewModel
-    /*private var pname: String = "1"
-    private var pdate: String = "1"
-    private var ppoint: String = ""
-    private var plocation: String = ""
-    private var pcycle: String = ""
-    private var phour: Int = 0
-    private var pminute: Int = 0
-    private var ptemp: String = ""
-    private var phumid: String = ""
+    //private val ImageUrl = "http://10.0.2.2/uploads/default3.png"
+    private var selectedImageUri: Uri? = null
+    private val retrofit = Retrofit.Builder()
+        .baseUrl("http://10.0.2.2/")
+        //.baseUrl("http://localhost:80/")
+        .addConverterFactory(GsonConverterFactory.create()) // Gson 변환기 추가
+        .addConverterFactory(ScalarsConverterFactory.create())
+        .build()
+    private val apiService = retrofit.create(ApiService::class.java)
 
-
-    override fun onNameReceived(plantName: String) {
-        pname = plantName
-    }
-
-    override fun onPlantInfoReceived(
-        registrationDate: String,
-        characteristics: String,
-        location: String
-    ) {
-        pdate = registrationDate
-        ppoint = characteristics
-        plocation = location
-    }
-
-    override fun onWateringInfoReceived(
-        wateringHour: Int,
-        wateringMinute: Int,
-        lastWateringDate: String,
-        temperature: String,
-        humidity: String
-    ) {
-        phour = wateringHour
-        pminute = wateringMinute
-        pcycle = lastWateringDate
-        ptemp = temperature
-        phumid = humidity
-    }
-*/
     @SuppressLint("MissingInflatedId")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -82,7 +69,6 @@ class Fragment_Enroll4 : Fragment() {
         }
 
         enrollBtn.setOnClickListener {
-
             val uemail = userEmail
             val pnameText = viewModel.pname
             val pdateText = viewModel.pdate
@@ -95,60 +81,89 @@ class Fragment_Enroll4 : Fragment() {
             val phumidText = viewModel.phumid
             val ptemp_alarm = viewModel.pwatering_alarm
             val phumid_alarm = viewModel.phumid_alarm
+            selectedImageUri = viewModel.imageuri
+            //val currentTimeMillis = System.currentTimeMillis()
 
-            if (pnameText != "") {
-                if (ptemp_alarm == 1) {
-                    if (pcycleText != "" && phourValue != 0 && pminuteValue != 0) {
-                        GlobalScope.launch(Dispatchers.IO) {
-                            enroll(
-                                uemail,
-                                pnameText,
-                                pdateText,
-                                ppointText,
-                                plocationText,
-                                pcycleText,
-                                phourValue,
-                                pminuteValue,
-                                ptempText,
-                                phumidText,
-                                ptemp_alarm,
-                                phumid_alarm
-                            )
+            if (pnameText.isNotBlank()) {
+                if (selectedImageUri != null) {
+                    val file = File(absolutelyPath(selectedImageUri, requireContext()))
+                    val requestFile = RequestBody.create("image/*".toMediaTypeOrNull(), file)
+                    val body = MultipartBody.Part.createFormData("image", file.name, requestFile)
+
+                    // 이미지 업로드 후 콜백에서 식물 등록 요청
+                    uploadImageAndGetUrl(body) { imageUrl ->
+                        if (imageUrl != null) {
+                            if (ptemp_alarm == 1) {
+                                if (pcycleText.isNotBlank() && phourValue != 0 && pminuteValue != 0) {
+                                    GlobalScope.launch(Dispatchers.IO) {
+                                        enroll(uemail, pnameText, pdateText, ppointText, plocationText, pcycleText,
+                                            phourValue, pminuteValue, ptempText, phumidText, ptemp_alarm, phumid_alarm, imageUrl)
+                                    }
+                                } else {
+                                    AlertDialog.Builder(requireContext())
+                                        .setTitle("With P")
+                                        .setMessage("알람을 받기 위한 시간과 주기를 설정하세요.")
+                                        .setPositiveButton("확인") { dialog, _ ->
+                                            dialog.dismiss()
+                                        }
+                                        .show()
+                                }
+                            } else {
+                                GlobalScope.launch(Dispatchers.IO) {
+                                    enroll(uemail, pnameText, pdateText, ppointText, plocationText, pcycleText,
+                                        phourValue, pminuteValue, ptempText, phumidText, ptemp_alarm, phumid_alarm, imageUrl)
+                                }
+                            }
+                        } else {
+                            // 이미지 업로드 실패 처리
+                            Toast.makeText(requireContext(), "이미지 uri가있으나 서버로부터 url을 받지못함", Toast.LENGTH_SHORT).show()
                         }
-                    } else {
-                        Toast.makeText(requireContext(), "Please fill in all required fields", Toast.LENGTH_SHORT).show()
                     }
                 } else {
-                    Log.d("pname", pnameText)
-                    Log.d("pdate", pdateText)
-                    Log.d("ppoint", ppointText)
-                    Log.d("plocation", plocationText)
-                    Log.d("pcycle", pcycleText)
                     GlobalScope.launch(Dispatchers.IO) {
-                        enroll(
-                            uemail,
-                            pnameText,
-                            pdateText,
-                            ppointText,
-                            plocationText,
-                            pcycleText,
-                            phourValue,
-                            pminuteValue,
-                            ptempText,
-                            phumidText,
-                            ptemp_alarm,
-                            phumid_alarm
-                        )
+                        enroll(uemail, pnameText, pdateText, ppointText, plocationText, pcycleText,
+                            phourValue, pminuteValue, ptempText, phumidText, ptemp_alarm, phumid_alarm, ImageUrl)
                     }
                 }
             } else {
-                Toast.makeText(requireContext(), "Plant name is missing", Toast.LENGTH_SHORT).show()
+                AlertDialog.Builder(requireContext())
+                    .setTitle("With P")
+                    .setMessage("식물의 이름을 입력해주세요.")
+                    .setPositiveButton("확인") { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .show()
             }
-            //startActivity(intent2)
         }
         return view
     }
 
+    private fun uploadImageAndGetUrl(body: MultipartBody.Part, callback: (String?) -> Unit) {
+        apiService.sendImage(body).enqueue(object : Callback<ImageUploadResponse> {
+            override fun onResponse(call: Call<ImageUploadResponse>, response: Response<ImageUploadResponse>) {
+                if (response.isSuccessful) {
+                    val imageUploadResponse = response.body()
+                    val imageUrl = imageUploadResponse?.imageUrl
+                    imageUrl?.let {
+                        Log.d("이미지 업로드 성공", imageUrl)
+                        callback(imageUrl) // 이미지 URL을 콜백으로 전달
+                    } ?: run {
+                        // 이미지 URL이 없는 경우, 실패 콜백 호출
+                        callback(null)
+                    }
+                } else {
+                    // 서버 응답이 실패한 경우, 실패 콜백 호출
+                    callback(null)
+                }
+            }
+
+            override fun onFailure(call: Call<ImageUploadResponse>, t: Throwable) {
+                // 네트워크 오류 또는 예외 발생 시 실패 콜백 호출
+                Log.e("sendImage", "이미지 업로드 실패", t)
+                callback(null)
+            }
+        })
+    }
     private fun enroll(
         uemail: String?,
         pname: String,
@@ -161,7 +176,8 @@ class Fragment_Enroll4 : Fragment() {
         ptemp: String,
         phumid: String,
         ptemp_alarm: Int,
-        phumid_alarm: Int
+        phumid_alarm: Int,
+        imageurl: String
     ) {
         GlobalScope.launch(Dispatchers.IO) {
             try {
@@ -187,7 +203,9 @@ class Fragment_Enroll4 : Fragment() {
                         URLEncoder.encode("ptemp", "UTF-8") + "=" + URLEncoder.encode(ptemp, "UTF-8") + "&" +
                         URLEncoder.encode("phumid", "UTF-8") + "=" + URLEncoder.encode(phumid, "UTF-8") + "&" +
                         URLEncoder.encode("ptemp_alarm", "UTF-8") + "=" + URLEncoder.encode(ptemp_alarm.toString(), "UTF-8") + "&" +
-                        URLEncoder.encode("phumid_alarm", "UTF-8") + "=" + URLEncoder.encode(phumid_alarm.toString(), "UTF-8")
+                        URLEncoder.encode("phumid_alarm", "UTF-8") + "=" + URLEncoder.encode(phumid_alarm.toString(), "UTF-8") + "&" +
+                        URLEncoder.encode("imageurl", "UTF-8") + "=" + URLEncoder.encode(imageurl, "UTF-8")
+
                 // 데이터 전송
                 val outputStream = OutputStreamWriter(connection.outputStream)
                 outputStream.write(postData)
@@ -254,6 +272,14 @@ class Fragment_Enroll4 : Fragment() {
             }
         }
     }
+    //uri로 이미지의 절대경로 얻어오기
+    private fun absolutelyPath(path: Uri?, context: Context): String{
+        var proj: Array<String> = arrayOf(MediaStore.Images.Media.DATA)
+        var c: Cursor? = context.contentResolver.query(path!!, proj, null, null, null)
+        var index = c?.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+        c?.moveToFirst()
+        var result = c?.getString(index!!)
 
-
+        return result!!
+    }
 }

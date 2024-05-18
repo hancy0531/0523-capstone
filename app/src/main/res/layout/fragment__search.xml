@@ -8,7 +8,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="10dp"
         android:orientation="vertical"
         android:padding="10dp">
 
@@ -17,8 +17,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
-            android:text="궁금한 식물을 찾아봐요"
-            android:textSize="24sp"
+            android:text="실내에서 키우기 좋은 식물에대해 찾아봐요"
+            android:textSize="22sp"
             android:textStyle="bold" />
 
         <SearchView

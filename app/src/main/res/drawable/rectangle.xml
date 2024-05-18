@@ -4,9 +4,10 @@
     android:layout_height="match_parent"
     android:shape="rectangle">
     <gradient
-        android:startColor="#BAEC85"
-        android:endColor="#E3FFDE"
-        android:angle="-45"/>
+        android:startColor="#C5FFB9"
+        android:endColor="#94EA49"
+        android:angle="45"/>
+    <corners android:radius="5dp"/>
 
 
 </shape>

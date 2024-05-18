@@ -1,6 +1,7 @@
 package com.example.plant
 
 import android.annotation.SuppressLint
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -8,9 +9,12 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.GridView
 import android.widget.TextView
 import android.widget.Toast
+import android.widget.PopupMenu
+import androidx.appcompat.app.AlertDialog
 import androidx.viewpager2.widget.ViewPager2
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -24,14 +28,17 @@ import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class Fragment_Garden : Fragment() {
     private lateinit var viewPagerTip:ViewPager2
     private lateinit var gridView:GridView
     private lateinit var indicator3: CircleIndicator3
+    private lateinit var userNameTextView: TextView
+    private lateinit var option: Button
     private var userEmail: String? = null
     private var userName: String? = null
-    private lateinit var userNameTextView: TextView
     private var pList: ArrayList<PlantListItem> = ArrayList()
     @SuppressLint("MissingInflatedId")
     override fun onCreateView(
@@ -50,6 +57,66 @@ class Fragment_Garden : Fragment() {
         gridView = view.findViewById(R.id.gridView)
         indicator3 = view.findViewById(R.id.tip_indicator)
         userNameTextView = view.findViewById(R.id.userNameText)
+        option = view.findViewById(R.id.options)
+
+        option.setOnClickListener { view ->
+            val popupMenu = PopupMenu(requireContext(), view)
+            popupMenu.menuInflater.inflate(R.menu.popup_menu, popupMenu.menu)
+            popupMenu.setOnMenuItemClickListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.menu1 -> {
+                        pList.sortByDescending { SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).parse(it.getEnrollTime()) }
+                        requireActivity().runOnUiThread {
+                            gridView.adapter = GridPlantListAdapter(pList)
+                        }
+                        true
+                    }
+                    R.id.menu2 -> {
+                        pList.sortBy { SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).parse(it.getEnrollTime()) }
+                        requireActivity().runOnUiThread {
+                            gridView.adapter = GridPlantListAdapter(pList)
+                        }
+                        true
+                    }
+                    else -> {
+                        pList.sortByDescending { SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).parse(it.getEnrollTime()) }
+                        requireActivity().runOnUiThread {
+                            gridView.adapter = GridPlantListAdapter(pList)
+                        }
+                        true
+                    }
+                }
+            }
+            popupMenu.show()
+        }
+        //다이얼로그
+        /*option.setOnClickListener{
+            val items = arrayOf("최신순", "등록순")
+            var selectedItem: String? = "최신순"
+            val builder = AlertDialog.Builder(requireContext()).apply {
+                setTitle("정렬 방식 선택")
+
+                setSingleChoiceItems(items, -1) { dialog, which ->
+                    selectedItem = items[which]
+
+                }
+                setPositiveButton("OK" ,DialogInterface.OnClickListener{ dialog, which ->
+                    when(selectedItem){
+                        "최신순" ->pList.sortByDescending { it.getItemId() }
+
+                        "등록순" ->pList.sortBy { it.getItemId() }
+
+                    }
+                    requireActivity().runOnUiThread {
+                        gridView.adapter = GridPlantListAdapter(pList)
+                        // GridView 업데이트 후 추가적인 작업 수행 가능
+                    }
+                    //Toast.makeText(this.context,selectedItem,Toast.LENGTH_SHORT).show()
+                })
+                create()
+                show()
+            }
+        }*/
 
         userNameTextView.text = userName
         //gridView.adapter = GridPlantListAdapter(pList)
@@ -78,7 +145,7 @@ class Fragment_Garden : Fragment() {
             // Toast.makeText(context, item.getNum().toString(), Toast.LENGTH_SHORT).show()
         }
 
-        indicator3.setViewPager(viewPagerTip)
+
         viewPagerTip.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
@@ -87,7 +154,7 @@ class Fragment_Garden : Fragment() {
         })
 
         viewPagerTip.adapter = ViewPagerAdapter(getTipList())
-
+        indicator3.setViewPager(viewPagerTip)
 
         return view
     }
@@ -142,12 +209,15 @@ class Fragment_Garden : Fragment() {
                 setPlantHumid(dataObject.getString("phumid"))
                 setTempAlarm(dataObject.getInt("ptemp_alarm"))
                 setHumidAlarm(dataObject.getInt("phumid_alarm"))
+                setImageUrl(dataObject.getString("imageurl"))
+                setEnrollTime(dataObject.getString("currenttime"))
             }
-
-            // 리스트에 추가됨
             pList.add(plantItem)
+            // 리스트에 추가됨
+            //pList.add(0, plantItem)
            // pList = plantList
         }
+        pList.sortByDescending { SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).parse(it.getEnrollTime()) }
         requireActivity().runOnUiThread {
             gridView.adapter = GridPlantListAdapter(pList)
             // GridView 업데이트 후 추가적인 작업 수행 가능
@@ -158,7 +228,9 @@ class Fragment_Garden : Fragment() {
     private fun handleFailure() {
         // 실패한 경우
         pList.clear()
-        pList.add(PlantListItem())
+        val defaultItem = PlantListItem()
+        defaultItem.setImageUrl("http://10.0.2.2/uploads/default3.png")
+        pList.add(defaultItem)
         //Toast.makeText(context, "Failed to retrieve data", Toast.LENGTH_SHORT).show()
     }
 

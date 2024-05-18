@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.plant.PlantListItem
 import com.example.plant.R
 
@@ -19,15 +20,17 @@ class RecyclerViewPlantAdapter(private val mList: ArrayList<PlantListItem>) :
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val context: Context = parent.context
         val inflater: LayoutInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        val view: View = inflater.inflate(R.layout.grid_item, parent, false)
+        val view: View = inflater.inflate(R.layout.recyclerview_home_item, parent, false)
         return ViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item: PlantListItem = mList[position]
        // holder.image.setImageResource(item.getImgSrc())
-        holder.image.setImageResource(R.drawable.img_6)
         holder.name.text = item.getPlantName()
+        Glide.with(holder.itemView.context)
+            .load(item.getImageUrl())
+            .into(holder.image)
     }
 
     override fun getItemCount(): Int {

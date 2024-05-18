@@ -35,6 +35,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var alarmId: TextView
     private lateinit var alarmPwd: TextView
     private var userName: String = ""
+    private var userEmail: String = ""
+    private var imageUrl: String = ""
     private val pattern = android.util.Patterns.EMAIL_ADDRESS
 
     @SuppressLint("MissingInflatedId")
@@ -129,8 +131,8 @@ class MainActivity : AppCompatActivity() {
                     handleSuccess(dataObject) //userName에 db의 uid 가져와서 저장
                     intent2.putExtra("userName", userName)
                     //메인화면으로 넘어감
-                    intent2.putExtra("userEmail", uemail)
-                    intent2.putExtra("userPassword", upw)
+                    intent2.putExtra("userEmail", userEmail)
+                    intent2.putExtra("imageUrl", imageUrl)
                     startActivity(intent2)
                 }
                 // 가져온 데이터를 처리
@@ -144,6 +146,9 @@ class MainActivity : AppCompatActivity() {
     private fun handleSuccess(dataObject: JSONObject) {
         //userItem = UserItem()
         userName = dataObject.getString("uid")
+        userEmail = dataObject.getString("uemail")
+        imageUrl = dataObject.getString("imageurl")
+
     }
 
     // 데이터 가져오기가 실패한 경우 처리할 로직

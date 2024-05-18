@@ -1,10 +1,15 @@
 package com.example.plant
 
+import ApiService
+import ImageUploadResponse
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
+import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -14,33 +19,79 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
-import androidx.fragment.app.FragmentManager
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import android.Manifest
+import android.content.ContentValues
+import android.os.Build
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.scalars.ScalarsConverterFactory
+import retrofit2.converter.gson.GsonConverterFactory
+import java.io.File
+import java.text.SimpleDateFormat
 
-const val GALLERY_REQUEST_CODE = 1001
+const val GALLERY_REQUEST_CODE = 12
+const val REQ_CAMERA = 11
+const val ImageUrl = "http://10.0.2.2/uploads/default3.png"
 
 class Fragment_Diary2 : Fragment() {
     private lateinit var image: ImageView
     private lateinit var date: TextView
     private lateinit var beforeBtn: Button
     private lateinit var saveBtn: Button
+    private lateinit var gallery: ImageView
+    private lateinit var camera: ImageView
     private var userEmail: String = ""
     private var plantName: String = ""
     private var plantId: Int = 0
     private var dDate: String = ""
+    private var selectedImageUri: Uri? = null
     private lateinit var diaryTitle: EditText
     private lateinit var diaryContent: EditText
+    //private val ImageUrl = "http://10.0.2.2/uploads/default.png"
+
+    //retrofit 객체 생성
+    private val retrofit = Retrofit.Builder()
+        .baseUrl("http://10.0.2.2/")
+        //.baseUrl("http://localhost:80/")
+        .addConverterFactory(GsonConverterFactory.create()) // Gson 변환기 추가
+        .addConverterFactory(ScalarsConverterFactory.create())
+        .build()
+    private val apiService = retrofit.create(ApiService::class.java)
+    //권한 요청 처리
+    private val galleryPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+        if (isGranted) {
+            // 권한이 허용되면 갤러리 열기
+            openGallery()
+        } else {
+            // 권한 거부되면 거절됐다는 메시지 보여주기
+            Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show()
+        }
+    }
+    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+        if (isGranted) {
+            // 권한이 허용되면 갤러리 열기
+            openCamera()
+        } else {
+            // 권한 거부되면 거절됐다는 메시지 보여주기
+            Toast.makeText(requireContext(), "Permission denied", Toast.LENGTH_SHORT).show()
+        }
+    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -55,6 +106,8 @@ class Fragment_Diary2 : Fragment() {
         saveBtn = view.findViewById(R.id.saveBtn)
         diaryTitle = view.findViewById(R.id.enterTitle)
         diaryContent = view.findViewById(R.id.enterContent)
+        gallery = view.findViewById(R.id.gallery)
+        camera = view.findViewById(R.id.camera)
 
         arguments?.let {
             userEmail = it.getString("userEmail").toString()
@@ -64,48 +117,126 @@ class Fragment_Diary2 : Fragment() {
         }
         date.text = dDate
         beforeBtn.setOnClickListener {
-           // val fragmentManager = requireActivity().supportFragmentManager
-           // fragmentManager.popBackStack()
-            val transaction = requireActivity().supportFragmentManager.beginTransaction()
-
-            // PlantEnrollFragment 인스턴스를 생성
-            val fragment = Fragment_Diary1()
-            val bundle = Bundle()
-
-            // Bundle에 데이터를 담기
-            bundle.putString("userEmail", userEmail)
-            bundle.putString("plantName", plantName)
-            bundle.putInt("plantId", plantId)
-            bundle.putString("diaryDate", dDate)
-
-            // Fragment에 Bundle을 설정
-            fragment.arguments = bundle
-
-            // FragmentTransaction을 사용하여 PlantEnrollFragment로 전환
-            transaction.replace(R.id.container, fragment)
-            transaction.addToBackStack(null) // 이전 Fragment로 돌아갈 수 있도록 back stack에 추가
-            transaction.commit() // 변경 사항을 적용
+            replaceFragment(Fragment_Diary1())
         }
-        image.setOnClickListener {
-            // 갤러리로 접근하기 위한 Intent 생성
-            val intent = Intent(Intent.ACTION_PICK)
-            intent.type = "image/*" // 이미지 타입으로 필터링
-
-            // 갤러리 앱을 실행하고 이미지를 선택할 수 있도록 요청
-            startActivityForResult(intent, GALLERY_REQUEST_CODE)
+        gallery.setOnClickListener {
+            //이미지 권한확인, sdk 33이상이면 READ_MEDIA_IMAGES, 이하면 READ_EXTERNAL_STORAGE
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                galleryPermissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES)
+            else
+                galleryPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+        }
+        camera.setOnClickListener {
+            requestPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
         saveBtn.setOnClickListener {
             val title = diaryTitle.text.toString()
             val content = diaryContent.text.toString()
-            GlobalScope.launch(Dispatchers.IO) {
-                plantEnroll(plantId,plantName,userEmail, dDate, title, content)
+            if(title.isNotEmpty()){
+                if(content.isNotEmpty()){
+                    //선택된 이미지가 있으면
+                    if (selectedImageUri != null) {
+                        val file = File(absolutelyPath(selectedImageUri, requireContext())) // Assuming selectedImageUri is a file URI
+                        val requestFile = RequestBody.create("image/*".toMediaTypeOrNull(), file)
+                        val body = MultipartBody.Part.createFormData("image", file.name, requestFile)
+                        Log.d("test", file.name) // 파일이름 출력
+                        sendImage(body)
+
+                    } else {
+                        // No image selected, proceed without uploading image
+                        diaryEnroll(plantId, plantName, userEmail, dDate, title, content, ImageUrl)
+                    }
+                }else{
+                    AlertDialog.Builder(requireContext())
+                        .setTitle("With P")
+                        .setMessage("내용을 입력해주세요.")
+                        .setPositiveButton("확인") { dialog, _ ->
+                            dialog.dismiss() // 다이얼로그 닫기
+                        }
+                        .show()
+                }
+            }else{
+                AlertDialog.Builder(requireContext())
+                    .setTitle("With P")
+                    .setMessage("제목을 입력해주세요.")
+                    .setPositiveButton("확인") { dialog, _ ->
+                        dialog.dismiss() // 다이얼로그 닫기
+                    }
+                    .show()
             }
         }
 
         return view
     }
+    //갤러리 열기
+    private fun openGallery() {
+        val intent = Intent(Intent.ACTION_PICK)
+        intent.type = "image/*"
+        startActivityForResult(intent, GALLERY_REQUEST_CODE)
+    }
+    private fun openCamera() {
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        createImageUri(newFileName(), "image/jpg")?.let {
+            selectedImageUri = it
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, selectedImageUri)
+            startActivityForResult(intent, REQ_CAMERA)
+        }
+        //intent.type = "image/*"
 
-    private fun plantEnroll(plantid: Int, pname: String, uemail: String, ddate: String, dtitle: String, dcontent: String) {
+    }
+    private fun createImageUri(filename: String, mimeType: String): Uri? {
+        val values = ContentValues()
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, filename)
+        values.put(MediaStore.Images.Media.MIME_TYPE,mimeType)
+        val resolver = requireContext().contentResolver
+        return resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+    }
+    private fun newFileName(): String{
+        val sdf = SimpleDateFormat("yyyyMMdd_HHmmss")
+        val filename = sdf.format(System.currentTimeMillis())
+        return "$filename.jpg"
+    }
+
+    //이미지를 서버로 보내고 서버에서 성공적으로 처리됐다고 이미지의 URL받으면 DB에 이미지 URL저장 plantEnroll
+    private fun sendImage(imageBody: MultipartBody.Part) {
+        apiService.sendImage(imageBody).enqueue(object : Callback<ImageUploadResponse> {
+            override fun onResponse(call: Call<ImageUploadResponse>, response: Response<ImageUploadResponse>) {
+                if (response.isSuccessful) {
+                    // 이미지 전송에 성공한 경우
+                    val imageUploadResponse = response.body()
+                    val imageUrl = imageUploadResponse?.imageUrl // 서버로부터 이미지 URL을 받아옴
+                    imageUrl?.let {
+                        // 이미지 URL이 있을 경우, 해당 URL을 사용하여 일지 등록
+                        diaryEnroll(plantId, plantName, userEmail, dDate, diaryTitle.text.toString(), diaryContent.text.toString(), imageUrl)
+                    } ?: run {
+                        // 이미지 URL이 없는 경우, 실패 메시지 표시
+                        Toast.makeText(requireContext(), "이미지 업로드 실패", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    // 서버 응답이 실패한 경우, 실패 메시지 표시
+                    Toast.makeText(requireContext(), "이미지 업로드 실패", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<ImageUploadResponse>, t: Throwable) {
+                // 네트워크 오류 또는 예외 발생 시 실패 메시지 표시
+                Toast.makeText(requireContext(), "이미지 업로드 실패", Toast.LENGTH_SHORT).show()
+                Log.e("sendImage", "이미지 업로드 실패", t)
+            }
+        })
+    }
+    //uri로 이미지의 절대경로 얻어오기
+    private fun absolutelyPath(path: Uri?, context: Context): String{
+        var proj: Array<String> = arrayOf(MediaStore.Images.Media.DATA)
+        var c: Cursor? = context.contentResolver.query(path!!, proj, null, null, null)
+        var index = c?.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+        c?.moveToFirst()
+        var result = c?.getString(index!!)
+
+        return result!!
+    }
+    //이미지및 URL및 입력받은 데이터 diary테이블에 저장
+    private fun diaryEnroll(plantid: Int, pname: String, uemail: String, ddate: String, dtitle: String, dcontent: String, imageurl: String) {
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 // PHP 스크립트의 URL
@@ -124,7 +255,8 @@ class Fragment_Diary2 : Fragment() {
                         URLEncoder.encode("uemail", "UTF-8") + "=" + URLEncoder.encode(uemail, "UTF-8") + "&" +
                         URLEncoder.encode("ddate", "UTF-8") + "=" + URLEncoder.encode(ddate, "UTF-8") + "&" +
                         URLEncoder.encode("dtitle", "UTF-8") + "=" + URLEncoder.encode(dtitle, "UTF-8") + "&" +
-                        URLEncoder.encode("dcontent", "UTF-8") + "=" + URLEncoder.encode(dcontent, "UTF-8")
+                        URLEncoder.encode("dcontent", "UTF-8") + "=" + URLEncoder.encode(dcontent, "UTF-8") + "&" +
+                        URLEncoder.encode("imageurl", "UTF-8") + "=" + URLEncoder.encode(imageurl, "UTF-8")
                 // 데이터 전송
                 val outputStream = OutputStreamWriter(connection.outputStream)
                 outputStream.write(postData)
@@ -152,25 +284,7 @@ class Fragment_Diary2 : Fragment() {
                 if (result == "registration successful") {
                     launch(Dispatchers.Main) {
                         //Fragment_Diary1 으로 넘어감
-                        val transaction = requireActivity().supportFragmentManager.beginTransaction()
-
-                        // PlantEnrollFragment 인스턴스를 생성
-                        val fragment = Fragment_Diary1()
-                        val bundle = Bundle()
-
-                        // Bundle에 데이터를 담기
-                        bundle.putString("userEmail", userEmail)
-                        bundle.putString("plantName", plantName)
-                        bundle.putInt("plantId", plantId)
-                        bundle.putString("diaryDate", dDate)
-
-                        // Fragment에 Bundle을 설정
-                        fragment.arguments = bundle
-
-                        // FragmentTransaction을 사용하여 PlantEnrollFragment로 전환
-                        transaction.replace(R.id.container, fragment)
-                        transaction.addToBackStack(null) // 이전 Fragment로 돌아갈 수 있도록 back stack에 추가
-                        transaction.commit() // 변경 사항을 적용
+                        replaceFragment(Fragment_Diary1())
                     }
                 } else {
                     launch(Dispatchers.Main) {
@@ -191,18 +305,43 @@ class Fragment_Diary2 : Fragment() {
             }
         }
     }
+    private fun replaceFragment(fragment: Fragment){
+        val transaction = requireActivity().supportFragmentManager.beginTransaction()
 
+        val fragment = fragment
+        val bundle = Bundle()
+
+        bundle.putString("userEmail", userEmail)
+        bundle.putString("plantName", plantName)
+        bundle.putInt("plantId", plantId)
+        bundle.putString("diaryDate", dDate)
+
+        // Fragment에 Bundle을 설정
+        fragment.arguments = bundle
+
+        // FragmentTransaction을 사용하여 PlantEnrollFragment로 전환
+        transaction.replace(R.id.container, fragment)
+        transaction.addToBackStack(null) // 이전 Fragment로 돌아갈 수 있도록 back stack에 추가
+        transaction.commit() // 변경 사항을 적용
+    }
     // onActivityResult 메서드를 오버라이드하여 갤러리로부터 선택된 이미지를 처리
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == GALLERY_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+        if(resultCode == Activity.RESULT_OK){
+        if (requestCode == GALLERY_REQUEST_CODE) {
             // 갤러리에서 선택한 이미지의 URI 가져오기
-            val selectedImageUri: Uri? = data?.data
+            selectedImageUri = data?.data
 
             // 선택한 이미지를 ImageView에 표시
             selectedImageUri?.let { uri ->
                 image.setImageURI(uri)
+            }
+        }else if(requestCode == REQ_CAMERA){
+           // val imageBitmap = data?.extras?.get("data") as Bitmap?
+            selectedImageUri?.let { uri ->
+                image.setImageURI(uri)
+            }
+
             }
         }
     }

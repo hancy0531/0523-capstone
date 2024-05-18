@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "482044087225",
+    "project_id": "plantfcm",
+    "storage_bucket": "plantfcm.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:482044087225:android:6739a98ee6ad6696914468",
+        "android_client_info": {
+          "package_name": "com.example.plant"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0PccpQwDtYjbmLrm6jsKrs5gpElOGur8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -10,12 +10,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:layout_weight="1"
         android:padding="10dp">
 
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="horizontal">
 
             <TextView
@@ -30,22 +31,23 @@
                 android:id="@+id/textView16"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:text="의"
                 android:textSize="28sp" />
         </LinearLayout>
-
         <TextView
             android:id="@+id/textView12"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="성장일지를 등록해주세요."
+            android:layout_weight="1"
             android:textSize="28sp" />
+
     </LinearLayout>
 
     <CalendarView
         android:id="@+id/calendarView"
         android:layout_width="match_parent"
+        android:layout_weight="1"
         android:layout_height="321dp" />
 
     <LinearLayout
@@ -74,7 +76,7 @@
     <android.widget.Button
         android:id="@+id/nextBtn"
         android:layout_width="match_parent"
-        android:layout_height="20dp"
+        android:layout_height="wrap_content"
         android:layout_weight="1"
         android:background="@drawable/rectangle"
         android:text="일지 작성하기" />

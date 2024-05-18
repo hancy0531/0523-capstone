@@ -1,11 +1,15 @@
 package com.example.plant
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
+import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -19,22 +23,31 @@ import java.net.URL
 import java.net.URLEncoder
 
 class ProfileActivity : AppCompatActivity(){
+    private lateinit var profileImage: CircleImageView
     private lateinit var profileUserName: TextView
     private lateinit var profileEmail: TextView
     private lateinit var profileBirth: TextView
     private lateinit var profileJoinDate: TextView
+    private lateinit var profileIntroduce: TextView
     private lateinit var cancelBtn: Button
+    private lateinit var editBtn: Button
     private var userItem: UserItem = UserItem()
+
+    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
 
         val email = intent.getStringExtra("userEmail")
         var userName = intent.getStringExtra("userName")
+        var imageUrl = intent.getStringExtra("imageUrl")
+
         profileUserName = findViewById(R.id.profileUserName)
         profileEmail = findViewById(R.id.profileEmail)
         profileBirth = findViewById(R.id.profileBirth)
         profileJoinDate = findViewById(R.id.joinDate)
+        profileIntroduce = findViewById(R.id.introduce)
+        profileImage = findViewById(R.id.profileImage)
 
         GlobalScope.launch(Dispatchers.IO) {
             email?.let { getUserInfo(it) }
@@ -43,8 +56,18 @@ class ProfileActivity : AppCompatActivity(){
         cancelBtn = findViewById(R.id.closeProfilePage)
         cancelBtn.setOnClickListener {
             val intent = Intent(this, HomeActivity::class.java)
-            intent.putExtra("userEmail", email)
-            intent.putExtra("userName", userName)
+            intent.putExtra("userEmail", userItem.getUemail())
+            intent.putExtra("userName", userItem.getUid())
+            intent.putExtra("imageUrl", userItem.getUimageurl())
+            startActivity(intent)
+        }
+        editBtn = findViewById(R.id.editProfilePage)
+        editBtn.setOnClickListener {
+            val intent = Intent(this, EditProfileActivity::class.java)
+            intent.putExtra("userEmail", userItem.getUemail())
+            intent.putExtra("userName", userItem.getUid())
+            intent.putExtra("userImage", userItem.getUimageurl())
+            intent.putExtra("userIntroduce", userItem.getUintroduce())
             startActivity(intent)
         }
     }
@@ -88,6 +111,8 @@ class ProfileActivity : AppCompatActivity(){
                 setUemail(dataObject.getString("uemail"))
                 setJoinDate(dataObject.getString("joindate"))
                 setUbirth(dataObject.getString("ubirth"))
+                setUimageurl(dataObject.getString("imageurl"))
+                setUintroduce(dataObject.getString("introduce"))
             }
         Log.d("MyTag", "Data retrieved successfully!")
         userItem = userInfoItem // userItem을 업데이트
@@ -98,6 +123,10 @@ class ProfileActivity : AppCompatActivity(){
             profileEmail.text = userItem.getUemail()
             profileBirth.text = userItem.getUbirth()
             profileJoinDate.text = userItem.getJoinDate()
+            profileIntroduce.text = userItem.getUintroduce()
+            Glide.with(this)
+                .load(userItem.getUimageurl())
+                .into(profileImage)
         }
 
     }

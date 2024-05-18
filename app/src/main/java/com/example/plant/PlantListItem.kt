@@ -14,7 +14,16 @@ class PlantListItem {
     private var plantHumid: String = ""
     private var tempAlarm: Int = 0
     private var humidAlarm: Int = 0
+    private var imageUrl: String = ""
+    private var enrollTime: String = ""
 
+    fun setEnrollTime(time: String) {
+        enrollTime = time
+    }
+
+    fun getEnrollTime(): String {
+        return enrollTime
+    }
     fun setItemId(id: Int){
         itemId = id
     }
@@ -116,6 +125,12 @@ class PlantListItem {
 
     fun getHumidAlarm(): Int {
         return humidAlarm
+    }
+    fun setImageUrl(url: String) {
+        imageUrl = url
+    }
+    fun getImageUrl(): String {
+        return imageUrl
     }
 }
 /*

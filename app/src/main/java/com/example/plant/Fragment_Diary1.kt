@@ -64,9 +64,11 @@ class Fragment_Diary1 : Fragment() {
             plantId = it.getInt("plantId")
             dDate = it.getString("diaryDate")
         }
+        Log.d("Fragment_Diary3", "Before button clicked: diaryDate=$dDate, plantId=$plantId, userEmail=$userEmail, plantName=$plantName")
         val currentDate = Calendar.getInstance().time
         val dateFormat = SimpleDateFormat("yyyy / M / d", Locale.getDefault())
         val formattedDate = dateFormat.format(currentDate)
+
         plantNameTextView.text = plantName
         if(dDate == null){
             date.text = formattedDate
@@ -83,8 +85,8 @@ class Fragment_Diary1 : Fragment() {
 
         GlobalScope.launch(Dispatchers.IO) {
             plantId?.let { plantId ->
-                dDate?.let { diaryDate ->
-                    getDiaries(plantId, diaryDate)
+                dDate?.let { dDate ->
+                    getDiaries(plantId, dDate)
                 }
             }
         }
@@ -135,6 +137,21 @@ class Fragment_Diary1 : Fragment() {
         recyclerView.addItemDecoration(dividerItemDecoration)
         return view
     }
+    /*
+    override fun onResume() {
+        super.onResume()
+        // Reload the data when the fragment resumes
+        reloadData()
+    }
+    private fun reloadData() {
+        GlobalScope.launch(Dispatchers.IO) {
+            plantId?.let { plantId ->
+                dDate?.let { diaryDate ->
+                    getDiaries(plantId, diaryDate)
+                }
+            }
+        }
+    }*/
     private fun getDiaries(plantid: Int, ddate: String) {
         val url = URL("http://10.0.2.2/getdiaries.php")
         val connection = url.openConnection() as HttpURLConnection
@@ -180,6 +197,8 @@ class Fragment_Diary1 : Fragment() {
                 setDiaryDate(dataObject.getString("ddate"))
                 setDiaryTitle(dataObject.getString("dtitle"))
                 setDiaryContent(dataObject.getString("dcontent"))
+                setImageUrl(dataObject.getString("imageurl"))
+                setEnrollTime(dataObject.getString("enrolltime"))
             }
 
             //if (diaryItem.getDiaryDate()==ddate) {
@@ -196,6 +215,7 @@ class Fragment_Diary1 : Fragment() {
 
         requireActivity().runOnUiThread {
             recyclerView.adapter = RecyclerViewDiaryAdapter(dList)
+            recyclerView.adapter?.notifyDataSetChanged()
         }
         Log.d("MyTag", "Data retrieved successfully!")
     }

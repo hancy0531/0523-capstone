@@ -4,9 +4,34 @@ create table user (
 	upw varchar(255) NOT NULL,
 	uemail varchar(255) NOT NULL,
 	joindate varchar(255) NOT NULL,
-	ubirth varchar(255) NOT NULL
+	ubirth varchar(255) NOT NULL,
+	imageurl VARCHAR(255) NOT NULL,
+	introduce VARCHAR(255) NOT NULL
 ) DEFAULT CHARACTER SET utf8;
+ALTER TABLE user ADD COLUMN imageurl VARCHAR(255) NOT NULL;
+ALTER TABLE user ADD COLUMN introduce VARCHAR(255) NOT NULL;
+edituserinfo.php - 수정 - 추가됨
+<?php
+	header("Content-Type: text/html;charset=UTF-8");
+	//$conn = mysqli_connect("127.0.0.1","데이터베이스 사용자명","데이터베이스 비밀번호","데이터베이스명");
+	$conn = mysqli_connect("127.0.0.1","root","1102","test");
 
+	mysqli_set_charset($conn, "utf8");
+	$uemail = $_POST['uemail'];
+	$uid = $_POST['uid'];
+	$imageurl = $_POST['imageurl'];
+	$introduce = $_POST['introduce'];
+
+	$query = "UPDATE user SET uid='$uid', imageurl='$imageurl', introduce='$introduce' WHERE uemail='$uemail'";
+	$result = mysqli_query($conn, $query);
+
+	if($result)
+		echo "registration successful";
+	else
+		echo "registration failed";
+
+	mysqli_close($conn);
+?>
 login.php - 검색
 <?php
 // MySQL 데이터베이스 연결 정보
@@ -41,9 +66,10 @@ if ($result->num_rows > 0) {
 $conn->close();
 ?>
 
-signup.php - 삽입, 수정됨
+signup.php - 삽입, 수정됨2
 <?php
 	header("Content-Type: text/html;charset=UTF-8");
+	//$conn = mysqli_connect("127.0.0.1","데이터베이스 사용자명","데이터베이스 비밀번호","데이터베이스명");
 	$conn = mysqli_connect("127.0.0.1","root","1102","test");
 
 	mysqli_set_charset($conn, "utf8");
@@ -52,8 +78,10 @@ signup.php - 삽입, 수정됨
 	$uemail = $_POST['uemail'];
 	$joindate = $_POST['joindate'];
 	$ubirth = $_POST['ubirth'];
+	$imageurl = $_POST['imageurl'];
+	$introduce = $_POST['introduce'];
 
-	$query = "insert into user(uid,upw,uemail,joindate,ubirth) values ('$uid','$upw','$uemail','$joindate','$ubirth')";
+	$query = "insert into user(uid,upw,uemail,joindate,ubirth,imageurl,introduce) values ('$uid','$upw','$uemail','$joindate','$ubirth','$imageurl','$introduce')";
 	$result = mysqli_query($conn, $query);
 
 	if($result)
@@ -106,12 +134,14 @@ CREATE TABLE IF NOT EXISTS enrollplant (
     ptemp VARCHAR(255) NOT NULL,
     phumid VARCHAR(255) NOT NULL,
     ptemp_alarm BOOLEAN NOT NULL DEFAULT false,
-    phumid_alarm BOOLEAN NOT NULL DEFAULT false
+    phumid_alarm BOOLEAN NOT NULL DEFAULT false,
+    currenttime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) DEFAULT CHARACTER SET utf8;
 
-enrollplant.php - 삽입
+enrollplant.php - 삽입 - 수정됨
 <?php
 	header("Content-Type: text/html;charset=UTF-8");
+	//$conn = mysqli_connect("127.0.0.1","데이터베이스 사용자명","데이터베이스 비밀번호","데이터베이스명");
 	$conn = mysqli_connect("127.0.0.1","root","1102","test");
 
 	mysqli_set_charset($conn, "utf8");
@@ -127,7 +157,8 @@ enrollplant.php - 삽입
 	$phumid = $_POST['phumid'];
 	$ptemp_alarm = $_POST['ptemp_alarm'];
 	$phumid_alarm = $_POST['phumid_alarm'];
-	$query = "insert into enrollplant(uemail,pname,pdate,ppoint,plocation,pcycle,phour,pminute,ptemp,phumid,ptemp_alarm,phumid_alarm) values ('$uemail','$pname','$pdate','$ppoint','$plocation','$pcycle','$phour','$pminute','$ptemp','$phumid','$ptemp_alarm','$phumid_alarm')";
+	$imageurl = $_POST['imageurl'];
+	$query = "insert into enrollplant(uemail,pname,pdate,ppoint,plocation,pcycle,phour,pminute,ptemp,phumid,ptemp_alarm,phumid_alarm,imageurl) values ('$uemail','$pname','$pdate','$ppoint','$plocation','$pcycle','$phour','$pminute','$ptemp','$phumid','$ptemp_alarm','$phumid_alarm','$imageurl')";
 	$result = mysqli_query($conn, $query);
 
 	if($result)
@@ -173,6 +204,10 @@ if ($result->num_rows > 0) {
 $conn->close();
 ?>
 ---------------------------------------------------------------------------------------------------------------------
+ALTER TABLE diary
+ADD CONSTRAINT fk_diary_enrollplant FOREIGN KEY (pname)
+REFERENCES enrollplant(pname)
+ON UPDATE CASCADE;
 diary 테이블
 create table diary (
 	id INT AUTO_INCREMENT PRIMARY KEY,
@@ -181,22 +216,38 @@ create table diary (
 	uemail VARCHAR(255) NOT NULL,
 	ddate VARCHAR(255) NOT NULL,
 	dtitle VARCHAR(255) NOT NULL,
-	dcontent VARCHAR(255) NOT NULL
+	dcontent VARCHAR(255) NOT NULL,
+	imageurl VARCHAR(255) NOT NULL,
+	enrolltime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) DEFAULT CHARACTER SET utf8;
 
-enrolldiary.php - 삽입
+레코드를 수정하면 enrollplant필드도 현재시간으로 업데이트, 이것도 쳐주셔야 합니다.
+DELIMITER //
+
+CREATE TRIGGER update_enrolltime
+BEFORE UPDATE ON diary
+FOR EACH ROW
+BEGIN
+    SET NEW.enrolltime = CURRENT_TIMESTAMP;
+END;
+//
+DELIMITER ;
+
+editdiary.php - 수정 - 추가됨
 <?php
 	header("Content-Type: text/html;charset=UTF-8");
+	//$conn = mysqli_connect("127.0.0.1","데이터베이스 사용자명","데이터베이스 비밀번호","데이터베이스명");
 	$conn = mysqli_connect("127.0.0.1","root","1102","test");
 
 	mysqli_set_charset($conn, "utf8");
-	$plantid = $_POST['plantid'];
-	$pname = $_POST['pname'];
-    	$uemail = $_POST['uemail'];
-	$ddate = $_POST['ddate'];
-	$dtitle = $_POST['dtitle'];
-    	$dcontent = $_POST['dcontent'];
-	$query = "insert into diary(plantid,pname,uemail,ddate,dtitle,dcontent) values ('$plantid','$pname','$uemail','$ddate','$dtitle','$dcontent')";
+
+	$enrolltime = $_POST['enrolltime']; // 수정할 레코드의 enrolltime
+	$id = $_POST['id']; // 수정할 레코드의 다이어리 아이디
+	$dtitle = $_POST['dtitle']; // 수정할 dtitle
+	$dcontent = $_POST['dcontent']; // 수정할 dcontent
+	$imageurl = $_POST['imageurl']; // 수정할 imageurl
+
+	$query = "UPDATE diary SET dtitle='$dtitle', dcontent='$dcontent', imageurl='$imageurl' WHERE enrolltime='$enrolltime' AND id='$id'";
 	$result = mysqli_query($conn, $query);
 
 	if($result)
@@ -206,7 +257,50 @@ enrolldiary.php - 삽입
 
 	mysqli_close($conn);
 ?>
+enrolldiary.php - 삽입 - 수정됨
+<?php
+	header("Content-Type: text/html;charset=UTF-8");
+	//$conn = mysqli_connect("127.0.0.1","데이터베이스 사용자명","데이터베이스 비밀번호","데이터베이스명");
+	$conn = mysqli_connect("127.0.0.1","root","1102","test");
 
+	mysqli_set_charset($conn, "utf8");
+	$plantid = $_POST['plantid'];
+	$pname = $_POST['pname'];
+    	$uemail = $_POST['uemail'];
+	$ddate = $_POST['ddate'];
+	$dtitle = $_POST['dtitle'];
+    	$dcontent = $_POST['dcontent'];
+	$imageurl = $_POST['imageurl'];
+	$query = "insert into diary(plantid,pname,uemail,ddate,dtitle,dcontent, imageurl) values ('$plantid','$pname','$uemail','$ddate','$dtitle','$dcontent','$imageurl')";
+	$result = mysqli_query($conn, $query);
+
+	if($result)
+		echo "registration successful";
+	else
+		echo "registration failed";
+
+	mysqli_close($conn);
+?>
+deletediary.php - 삭제 - 추가됨
+<?php
+	header("Content-Type: text/html;charset=UTF-8");
+	//$conn = mysqli_connect("127.0.0.1","데이터베이스 사용자명","데이터베이스 비밀번호","데이터베이스명");
+	$conn = mysqli_connect("127.0.0.1","root","1102","test");
+
+	mysqli_set_charset($conn, "utf8");
+
+	$id = $_POST['id']; // 수정할 레코드의 다이어리 아이디
+
+	$query = "DELETE FROM diary WHERE id='$id'";
+	$result = mysqli_query($conn, $query);
+
+	if($result)
+		echo "delete successful";
+	else
+		echo "delete failed";
+
+	mysqli_close($conn);
+?>
 getdiaries.php - 검색
 <?php
 // MySQL 데이터베이스 연결 정보
@@ -244,6 +338,7 @@ if ($result->num_rows > 0) {
 $conn->close();
 ?>
 ---------------------------------------------------------------------------------------------------------------------
+ALTER TABLE enrollplant ADD enroll_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
 테이블 한글저장안될때 
 SHOW CREATE TABLE author;
 ALTER TABLE user CONVERT TO CHARACTER SET utf8;

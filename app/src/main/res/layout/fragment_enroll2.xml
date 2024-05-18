@@ -29,7 +29,7 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/date3"
+                android:id="@+id/detailDate"
                 android:layout_width="match_parent"
                 android:layout_height="58dp"
                 android:gravity="center"

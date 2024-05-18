@@ -8,7 +8,16 @@ class DiaryListItem {
     private var diaryDate: String = ""
     private var diaryTitle: String = ""
     private var diaryContent: String = ""
+    private var imageUrl: String = ""
+    private var enrollTime: String = ""
 
+    fun setEnrollTime(time: String) {
+        enrollTime = time
+    }
+
+    fun getEnrollTime(): String {
+        return enrollTime
+    }
     fun setItemId(id: Int){
         itemId = id
     }
@@ -19,7 +28,7 @@ class DiaryListItem {
         plantId = id
     }
     fun getPlantId(): Int{
-        return itemId
+        return plantId
     }
 
     fun setUserEmail(email: String) {
@@ -60,5 +69,10 @@ class DiaryListItem {
     fun getDiaryContent(): String {
         return diaryContent
     }
-
+    fun setImageUrl(url: String) {
+        imageUrl = url
+    }
+    fun getImageUrl(): String {
+        return imageUrl
+    }
 }

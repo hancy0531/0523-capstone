@@ -44,4 +44,12 @@ interface ApiService {
     // 이미지를 가져오기 위한 메소드
     @GET("getimage.php") // 이미지를 가져오는 서버의 엔드포인트 URL
     fun getImageById(@Query("id") id: Int): Call<ResponseBody>
+
+    @Multipart
+    @POST("image_upload.php")
+    fun sendImage(
+        @Part imageFile: MultipartBody.Part
+    ): Call<ImageUploadResponse>
+
 }
+data class ImageUploadResponse(val imageUrl: String)

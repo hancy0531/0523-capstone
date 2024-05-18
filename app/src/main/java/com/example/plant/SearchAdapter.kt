@@ -1,5 +1,6 @@
 package com.example.plant
 
+import PlantItem
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
@@ -10,9 +11,9 @@ import android.widget.Filterable
 
 import android.widget.TextView
 
-class SearchAdapter (private var items: ArrayList<SearchListItem>): BaseAdapter(), Filterable {
+class SearchAdapter(private var items: List<PlantItem>): BaseAdapter(), Filterable {
 
-    private var filteredItemList: ArrayList<SearchListItem> = items
+    private var filteredItemList: List<PlantItem> = items
 
     override fun getCount(): Int {
         return filteredItemList.size
@@ -32,11 +33,14 @@ class SearchAdapter (private var items: ArrayList<SearchListItem>): BaseAdapter(
         if (view == null) {
             view = LayoutInflater.from(parent?.context).inflate(R.layout.search_item, parent, false)
         }
-        val item = getItem(position) as SearchListItem
+        val item = getItem(position) as PlantItem
         var title = view!!.findViewById<TextView>(R.id.searchTitle)
         var content = view.findViewById<TextView>(R.id.searchContent)
-        title.text = item.getTitle()
-        content.text = item.getContent()
+        var plantbneNm = view.findViewById<TextView>(R.id.plantbneNm)
+        plantbneNm.text = item.plntbneNm//식물학명
+        //title.text = item.distbNm
+        title.text = item.plantNm
+        content.text = item.adviseInfo
 
         return view
     }
@@ -45,15 +49,17 @@ class SearchAdapter (private var items: ArrayList<SearchListItem>): BaseAdapter(
         return object : Filter() {
             override fun performFiltering(constraint: CharSequence?): FilterResults {
                 val results = FilterResults()
-                val filteredList = ArrayList<SearchListItem>()
+                val filteredList = ArrayList<PlantItem>()
 
                 if (constraint.isNullOrEmpty()) {
                     filteredList.addAll(items)
                 } else {
                     val query = constraint.toString().toLowerCase().trim()
                     for (item in items) {
-                        if (item.getTitle().toLowerCase().contains(query) ||
-                            item.getContent().toLowerCase().contains(query)) {
+                        if (item.distbNm.toLowerCase().contains(query) ||
+                            item.adviseInfo.toLowerCase().contains(query) ||
+                            item.plntbneNm.toLowerCase().contains(query) ||
+                            item.plantNm.toLowerCase().contains(query)){
                             filteredList.add(item)
                         }
                     }
@@ -66,7 +72,7 @@ class SearchAdapter (private var items: ArrayList<SearchListItem>): BaseAdapter(
 
             override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
                 if (results != null) {
-                    filteredItemList = results.values as ArrayList<SearchListItem>
+                    filteredItemList = results.values as ArrayList<PlantItem>
                     notifyDataSetChanged()
                 }
             }

@@ -65,6 +65,8 @@ class Fragment_Enroll3 : Fragment(), View.OnClickListener {
 
         viewModel = ViewModelProvider(requireActivity()).get(PlantEnrollViewModel::class.java)
         //plantDataListener = (activity as? DataListener)
+        selectedHour = timePicker.currentHour
+        selectedMinute = timePicker.currentMinute
         temperatureTextView.text = "15°C ~ 25°C"
         humidTextView.text = "40% ~ 60%"
         sunday.setOnClickListener(this)
@@ -74,6 +76,7 @@ class Fragment_Enroll3 : Fragment(), View.OnClickListener {
         thursday.setOnClickListener(this)
         friday.setOnClickListener(this)
         saturday.setOnClickListener(this)
+
 
         // NumberPicker에 범위 및 초기값 설정
         temperaturePicker.minValue = 10

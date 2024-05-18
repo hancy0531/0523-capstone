@@ -89,19 +89,49 @@ class SignUpActivity : AppCompatActivity() {
                         checkExistingId(uid, upw, uemail, joindate, ubirth)
                     }
                     }else{
-                        Toast.makeText(this, "생년월일을 yyyyMMdd 입력해주세요", Toast.LENGTH_SHORT).show()
+                        AlertDialog.Builder(this)
+                            .setTitle("With P")
+                            .setMessage("생년월일을 형식(yyyyMMdd)에 맞게 입력해주세요")
+                            .setPositiveButton("확인") { dialog, _ ->
+                                dialog.dismiss() // 다이얼로그 닫기
+                            }
+                            .show()
                     }
                     }else{
-                        Toast.makeText(this, "비밀번호가 불일치합니다.", Toast.LENGTH_SHORT).show()
+                        AlertDialog.Builder(this)
+                            .setTitle("With P")
+                            .setMessage("비밀번호가 불일치합니다.")
+                            .setPositiveButton("확인") { dialog, _ ->
+                                dialog.dismiss() // 다이얼로그 닫기
+                            }
+                            .show()
                     }
                 }else{
-                    Toast.makeText(this, "영문, 숫자, 특수문자 조합으로 10자리 이상 입력해주세요. ", Toast.LENGTH_SHORT).show()
+                    AlertDialog.Builder(this)
+                        .setTitle("With P")
+                        .setMessage("영문, 숫자, 특수문자 조합으로 10자리 이상 입력해주세요. ")
+                        .setPositiveButton("확인") { dialog, _ ->
+                            dialog.dismiss() // 다이얼로그 닫기
+                        }
+                        .show()
                 }
             }else{
-                Toast.makeText(this, "이메일 형식이 올바르지 않습니다.", Toast.LENGTH_SHORT).show()
+                AlertDialog.Builder(this)
+                    .setTitle("With P")
+                    .setMessage("이메일 형식이 올바르지 않습니다.")
+                    .setPositiveButton("확인") { dialog, _ ->
+                        dialog.dismiss() // 다이얼로그 닫기
+                    }
+                    .show()
             }
             }else{
-                Toast.makeText(this, "빈칸없이 입력해주세요.", Toast.LENGTH_SHORT).show()
+                AlertDialog.Builder(this)
+                    .setTitle("With P")
+                    .setMessage("빈칸없이 입력해주세요.")
+                    .setPositiveButton("확인") { dialog, _ ->
+                        dialog.dismiss() // 다이얼로그 닫기
+                    }
+                    .show()
                 }
         }
         password.addTextChangedListener {
@@ -161,15 +191,17 @@ class SignUpActivity : AppCompatActivity() {
         birth.addTextChangedListener{
             var birth = birth.text.toString()
             if(birth.isNotEmpty()) {
-                alarmBirth.visibility = View.GONE
+                if(isValidBirthDate(birth)&&birth.length==8) {
+                    alarmBirth.visibility = View.GONE
+                }else{
+                    alarmBirth.visibility = View.VISIBLE
+                }
             }else{
-                if(birth.length!=8){
-                alarmBirth.visibility = View.VISIBLE
-                alarmBirth.text="생일은 8자리를 입력해주세요."
+                alarmBirth.visibility = View.GONE
                 }
             }
         }
-    }
+
     //중복이메일 체크 기능
     private fun checkExistingId(uid:String, upw:String, uemail:String, joindate: String, ubirth: String) {
         try {
@@ -241,13 +273,16 @@ class SignUpActivity : AppCompatActivity() {
             // POST 요청 설정
             connection.requestMethod = "POST"
             connection.doOutput = true
-
+            val defaultImageUrl ="http://10.0.2.2/uploads/defaultProfile.png"
+            val defaultIntroduce = ""
             // 데이터 작성
             var postData = URLEncoder.encode("uid", "UTF-8") + "=" + URLEncoder.encode(uid, "UTF-8")
             postData += "&" + URLEncoder.encode("upw", "UTF-8") + "=" + URLEncoder.encode(upw, "UTF-8")
             postData += "&" + URLEncoder.encode("uemail", "UTF-8") + "=" + URLEncoder.encode(uemail, "UTF-8")
             postData += "&" + URLEncoder.encode("joindate", "UTF-8") + "=" + URLEncoder.encode(joindate, "UTF-8")
             postData += "&" + URLEncoder.encode("ubirth", "UTF-8") + "=" + URLEncoder.encode(ubirth, "UTF-8")
+            postData += "&" + URLEncoder.encode("imageurl", "UTF-8") + "=" + URLEncoder.encode(defaultImageUrl, "UTF-8")
+            postData += "&" + URLEncoder.encode("introduce", "UTF-8") + "=" + URLEncoder.encode(defaultIntroduce, "UTF-8")
             val outputStream = OutputStreamWriter(connection.outputStream)
             outputStream.write(postData)
             outputStream.flush()

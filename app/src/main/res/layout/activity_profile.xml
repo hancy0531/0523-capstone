@@ -9,170 +9,205 @@
     android:orientation="vertical">
 
     <TextView
-        android:id="@+id/textView4"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
-        android:gravity="center"
-        android:text="•••-──────✧✦✧✦✧──────-•••" />
-
-    <TextView
         android:id="@+id/textView8"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="65dp"
         android:layout_gravity="center"
-
-        android:gravity="center"
+        android:layout_weight="1"
         android:padding="10dp"
         android:text="나의 프로필"
-        android:textSize="34sp"
-        android:textStyle="bold|italic" />
-
-    <TextView
-        android:id="@+id/textView17"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="•••-──────✧✦✦✦✧──────-•••" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="10dp"
-        android:layout_weight="1">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="#DCDCED"
-            android:text="이름:"
-            android:textSize="24sp"
-            android:textStyle="bold|italic" />
-
-        <TextView
-            android:id="@+id/profileUserName"
-            android:layout_width="61dp"
-            android:layout_height="wrap_content"
-            android:maxLines="2"
-            android:textColor="#000000"
-            android:textSize="24sp" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="10dp"
-        android:layout_weight="1">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="#DCDCED"
-            android:text="이메일:"
-            android:textSize="24sp"
-            android:textStyle="bold|italic" />
-
-        <TextView
-            android:id="@+id/profileEmail"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="#000000"
-            android:textSize="24sp" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="10dp">
-
-        <TextView
-            android:id="@+id/birthDate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="#DCDCED"
-            android:text="생년월일:"
-            android:textSize="24sp"
-            android:textStyle="bold|italic" />
-
-        <TextView
-            android:id="@+id/profileBirth"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-
-            android:textColor="#000000"
-            android:textSize="24sp" />
-
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="10dp">
-
-        <TextView
-
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="#DCDCED"
-            android:text="가입일:"
-            android:textSize="24sp"
-            android:textStyle="bold|italic" />
-
-        <TextView
-            android:id="@+id/joinDate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-
-            android:textColor="#000000"
-            android:textSize="24sp" />
-
-    </LinearLayout>
-    <TextView
-        android:id="@+id/logout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="60dp"
-        android:layout_marginBottom="60dp"
-        android:gravity="center"
-        android:text="Logout"
         android:textSize="20sp"
         android:textStyle="bold|italic" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="300dp"
+        android:layout_weight="1"
+        android:background="#FFFFFF"
+        android:gravity="center"
+        android:orientation="vertical">
 
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/profileImage"
+            android:layout_width="300dp"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="296dp"
+        android:layout_weight="1"
+        android:background="#FFFFFF"
+        android:orientation="vertical"
+        android:layout_marginTop="20dp"
+        android:padding="10dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:padding="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#DCDCED"
+                android:text="닉네임:  "
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/profileUserName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="2"
+                android:textColor="#000000"
+                android:textSize="20sp" />
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:padding="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#DCDCED"
+                android:text="자기소개:  "
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/introduce"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="2"
+                android:textColor="#000000"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:padding="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#DCDCED"
+                android:text="이메일:  "
+                android:textColor="#808080"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/profileEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#808080"
+                android:textSize="20sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:padding="10dp">
+
+            <TextView
+                android:id="@+id/birthDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#DCDCED"
+                android:text="생년월일:  "
+                android:textColor="#808080"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/profileBirth"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#808080"
+                android:textSize="20sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:padding="10dp">
+
+            <TextView
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#DCDCED"
+                android:text="가입일:  "
+                android:textColor="#808080"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/joinDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#808080"
+                android:textSize="20sp" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/logout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="30dp"
+        android:gravity="center"
+        android:text="로그아웃"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:background="#CDCDDF"
+        android:layout_weight="1"
+        android:gravity="right"
         android:orientation="horizontal"
         android:padding="10dp">
 
-        <TextView
-            android:id="@+id/textView14"
-            android:layout_width="268dp"
-            android:layout_height="match_parent"
-            android:text="TextView"
-            android:visibility="invisible" />
-
         <android.widget.Button
             android:id="@+id/closeProfilePage"
-            android:layout_width="120dp"
-            android:layout_height="60dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="right"
             android:background="@drawable/button_cancel"
-            android:text="Close"
+            android:text="이전"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp" />
+        <android.widget.Button
+            android:id="@+id/editProfilePage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:layout_marginLeft="20dp"
+            android:background="@drawable/rectangle"
+            android:text="수정"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
             android:textSize="20sp" />

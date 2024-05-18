@@ -1,19 +1,15 @@
 package com.example.plant
 
 import android.annotation.SuppressLint
-import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.CalendarView
 import android.widget.EditText
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -35,7 +31,7 @@ class Fragment_Enroll2 : Fragment() {
         val view = inflater.inflate(R.layout.fragment_enroll2, container, false)
 
         calender = view.findViewById(R.id.calendarView2)
-        date = view.findViewById(R.id.date3)
+        date = view.findViewById(R.id.detailDate)
         point = view.findViewById(R.id.plantDtl)
         location = view.findViewById(R.id.plantLocation)
         viewModel = ViewModelProvider(requireActivity()).get(PlantEnrollViewModel::class.java)

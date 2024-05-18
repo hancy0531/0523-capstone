@@ -1,6 +1,8 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("kotlin-kapt")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -10,7 +12,7 @@ android {
     defaultConfig {
         applicationId = "com.example.plant"
         minSdk = 24
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -50,4 +52,22 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    implementation ("com.squareup.retrofit2:converter-scalars:2.9.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation ("com.squareup.okhttp3:okhttp:4.9.1")
+    implementation ("com.squareup.retrofit2:adapter-rxjava:2.1.0")
+    implementation ("com.google.code.gson:gson:2.8.6")
+    implementation ("com.github.bumptech.glide:glide:4.12.0")
+    kapt ("com.github.bumptech.glide:compiler:4.12.0")
+    implementation ("de.hdodenhof:circleimageview:3.1.0")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    implementation ("org.json:json:20210307")
+    implementation ("com.squareup.moshi:moshi-kotlin:1.12.0")
+    implementation ("org.simpleframework:simple-xml:2.7.1")
+    implementation(platform("com.google.firebase:firebase-bom:33.0.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-inappmessaging-display-ktx")
+    implementation("com.google.firebase:firebase-analytics-ktx")
+    implementation ("com.google.firebase:firebase-messaging:23.0.0")
+
 }

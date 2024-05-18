@@ -25,6 +25,8 @@ import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 
 class Fragment_Home : Fragment() {
@@ -32,7 +34,7 @@ class Fragment_Home : Fragment() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var enrollBtn: Button
     private var userEmail: String? = null
-    private var userPassword: String? = null
+    private var imageUrl: String? = null
     private var pList: ArrayList<PlantListItem> = ArrayList()
     @SuppressLint("MissingInflatedId")
     override fun onCreateView(
@@ -44,6 +46,7 @@ class Fragment_Home : Fragment() {
         bottomNavigationView.visibility = View.VISIBLE
         arguments?.let {
             userEmail = it.getString("userEmail")
+            imageUrl = it.getString("imageUrl")
             //userPassword = it.getString("userPassword")
         }
         GlobalScope.launch(Dispatchers.IO) {
@@ -80,6 +83,7 @@ class Fragment_Home : Fragment() {
         }*/
         //recyclerView.adapter = RecyclerViewPlantAdapter(Fragment_Garden.getPlantList())
         //recyclerView.adapter = RecyclerViewPlantAdapter(pList)
+        recyclerView.adapter = RecyclerViewPlantAdapter(pList)
         recyclerView.layoutManager =
             LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false)
         recyclerView.addItemDecoration(RecyclerViewDecoration(20))
@@ -139,6 +143,8 @@ class Fragment_Home : Fragment() {
                 setPlantHumid(dataObject.getString("phumid"))
                 setTempAlarm(dataObject.getInt("ptemp_alarm"))
                 setHumidAlarm(dataObject.getInt("phumid_alarm"))
+                setImageUrl(dataObject.getString("imageurl"))
+                setEnrollTime(dataObject.getString("currenttime"))
             }
             //recyclerView.adapter = RecyclerViewPlantAdapter(pList)
 
@@ -148,6 +154,7 @@ class Fragment_Home : Fragment() {
            // recyclerView.adapter?.notifyDataSetChanged()
 
         }
+        pList.sortByDescending { SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).parse(it.getEnrollTime()) }
         requireActivity().runOnUiThread {
             recyclerView.adapter = RecyclerViewPlantAdapter(pList)
         }
@@ -158,7 +165,9 @@ class Fragment_Home : Fragment() {
     private fun handleFailure() {
         // 실패한 경우
         pList.clear()
-        pList.add(PlantListItem()) // 아무것도 등록 안되어 있을때 표시되는 기본 아이템
+        val defaultItem = PlantListItem()
+        defaultItem.setImageUrl("http://10.0.2.2/uploads/default3.png")
+        pList.add(defaultItem) // 아무것도 등록 안되어 있을때 표시되는 기본 아이템
         //recyclerView.adapter?.notifyDataSetChanged()
         //Toast.makeText(requireContext(), "Failed to retrieve data", Toast.LENGTH_SHORT).show()
     }
