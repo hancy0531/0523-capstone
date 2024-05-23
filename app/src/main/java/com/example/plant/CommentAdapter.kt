@@ -10,11 +10,14 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
+import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
@@ -50,6 +53,7 @@ class CommentAdapter(private val context: Context, private val commentList: Muta
         val dateTextView: TextView = itemView.findViewById(R.id.comment_date)
         val editTextView: TextView = itemView.findViewById(R.id.edit_comment) // 수정 버튼
         val deleteTextView: TextView = itemView.findViewById(R.id.delete_comment) // 삭제 버튼
+        val writerImageView: CircleImageView = itemView.findViewById(R.id.user_image) //댓글 작성자 프로필 이미지뷰
 
         fun bind(comment: Comment) {
             writerTextView.text = comment.comment_writer
@@ -64,6 +68,9 @@ class CommentAdapter(private val context: Context, private val commentList: Muta
                 editTextView.visibility = View.GONE
                 deleteTextView.visibility = View.GONE
             }
+
+            //댓글 작성자의 이미지 로드
+            loadImage(comment.comment_writer, writerImageView)
 
             // 수정 버튼 클릭 리스너 설정
             editTextView.setOnClickListener {
@@ -89,6 +96,57 @@ class CommentAdapter(private val context: Context, private val commentList: Muta
             }
 
         }
+
+        //댓글 작성자 프로필 가져오기
+        private fun loadImage(uemail: String, imageView: CircleImageView) {
+            GlobalScope.launch(Dispatchers.IO) {
+                try {
+                    val url = URL("http://10.0.2.2/getprofileimage.php")
+                    val connection = url.openConnection() as HttpURLConnection
+                    connection.requestMethod = "POST"
+                    connection.doOutput = true
+
+                    val postData = URLEncoder.encode("uemail", "UTF-8") + "=" + URLEncoder.encode(uemail, "UTF-8")
+
+                    val outputStream = OutputStreamWriter(connection.outputStream)
+                    outputStream.write(postData)
+                    outputStream.flush()
+                    outputStream.close()
+
+                    val responseCode = connection.responseCode
+                    if (responseCode == HttpURLConnection.HTTP_OK) {
+                        val inputStream = connection.inputStream
+                        val reader = BufferedReader(InputStreamReader(inputStream))
+                        val response = StringBuilder()
+                        var line: String?
+                        while (reader.readLine().also { line = it } != null) {
+                            response.append(line)
+                        }
+                        reader.close()
+                        inputStream.close()
+
+                        val jsonResponse = JSONObject(response.toString())
+                        if (jsonResponse.has("imageurl")) {
+                            val imageUrl = jsonResponse.getString("imageurl")
+                            withContext(Dispatchers.Main) {
+                                Glide.with(context)
+                                    .load(imageUrl)
+                                    .into(imageView)
+                            }
+                        } else {
+                            withContext(Dispatchers.Main) {
+                                // 이미지 URL이 없는 경우 처리
+                            }
+                        }
+                    } else {
+                        // 요청 실패 처리
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+
 
     }
 

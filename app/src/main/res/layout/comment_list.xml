@@ -6,12 +6,12 @@
     android:layout_height="wrap_content"
     android:padding="1dp">
 
-    <ImageView
+    <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/user_image"
         android:layout_width="30dp"
         android:layout_height="30dp"
+        android:layout_marginStart="2dp"
         android:padding="0dp"
-        android:src="@drawable/boarditem"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"

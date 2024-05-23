@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.SearchView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -16,16 +17,20 @@ import com.android.volley.RequestQueue
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.Volley
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.github.clans.fab.FloatingActionButton
+import com.github.clans.fab.FloatingActionMenu
 import org.json.JSONException
 
 class Fragment_FreeBoard : Fragment() {
     private lateinit var WriteFreePostFragment: Fragment_WriteFreePost
+    private lateinit var floatingActionMenu: FloatingActionMenu
+    private lateinit var fab1: FloatingActionButton
+    private lateinit var fab2: FloatingActionButton
     private lateinit var recyclerView: RecyclerView
     private lateinit var postAdapter: PostAdapter
     private lateinit var requestQueue: RequestQueue
-    private lateinit var writepostbtn: Button
-    private lateinit var my_post: TextView
+//    private lateinit var writepostbtn: Button
+//    private lateinit var my_post: TextView
     private var userEmail: String? = null
     private var board_type: Int? = null
 
@@ -49,6 +54,32 @@ class Fragment_FreeBoard : Fragment() {
             6 -> boardNameTextView.text = "질문게시판"
         }
 
+//        val bundle = Bundle().apply {
+//            putString("userEmail", userEmail)
+//            board_type?.let { putInt("board_type", it) }
+//            putString("task","write")
+//        }
+//        WriteFreePostFragment = Fragment_WriteFreePost().apply {
+//            arguments = bundle
+//        }
+//        val writepostbtn = view.findViewById<FloatingActionButton>(R.id.write_post)
+//        writepostbtn.setOnClickListener {
+//            replaceFragment(WriteFreePostFragment)
+//        }
+
+        //FloatingActionMenu
+        floatingActionMenu = view.findViewById(R.id.floatingActionMenu)
+        fab1 = view.findViewById(R.id.fab1)
+        fab2 = view.findViewById(R.id.fab2)
+
+        // Set click listeners for each FAB
+        fab1.setOnClickListener {
+            //내 게시물만 보기
+            getMyPosts()
+            floatingActionMenu.close(true)
+        }
+
+
         val bundle = Bundle().apply {
             putString("userEmail", userEmail)
             board_type?.let { putInt("board_type", it) }
@@ -57,10 +88,12 @@ class Fragment_FreeBoard : Fragment() {
         WriteFreePostFragment = Fragment_WriteFreePost().apply {
             arguments = bundle
         }
-        val writepostbtn = view.findViewById<FloatingActionButton>(R.id.write_post)
-        writepostbtn.setOnClickListener {
+        fab2.setOnClickListener {
+            //새 게시물 작성하기
             replaceFragment(WriteFreePostFragment)
         }
+
+
 
 //        writepostbtn = view.findViewById(R.id.writepost)
 //        writepostbtn.setOnClickListener {
@@ -93,10 +126,10 @@ class Fragment_FreeBoard : Fragment() {
             }
         })
 
-        my_post = view.findViewById(R.id.mypost)
-        my_post.setOnClickListener {
-            getMyPosts()
-        }
+//        my_post = view.findViewById(R.id.mypost)
+//        my_post.setOnClickListener {
+//            getMyPosts()
+//        }
 
         return view
     }
@@ -253,8 +286,6 @@ class Fragment_FreeBoard : Fragment() {
         }
         builder.show()
     }
-
-
 
 
 }

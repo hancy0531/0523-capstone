@@ -42,7 +42,7 @@
 
                 <androidx.appcompat.widget.SearchView
                     android:id="@+id/post_search_view"
-                    android:layout_width="350dp"
+                    android:layout_width="380dp"
                     android:layout_height="wrap_content"
 
                     app:closeIcon="@color/black"
@@ -51,14 +51,6 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:queryHint="게시물을 검색해보세요" />
-
-                <TextView
-                    android:id="@+id/mypost"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:background="@drawable/content_border"
-                    android:text="MY"
-                    android:textSize="27sp" />
 
             </LinearLayout>
 
@@ -78,6 +70,7 @@
                     android:scrollbarTrackVertical="@null"
                     android:scrollbars="vertical" />
 
+                <!--
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/write_post"
                     android:layout_width="wrap_content"
@@ -91,6 +84,50 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:shapeAppearance="?attr/cornerFamily" />
+                    -->
+
+
+                <com.github.clans.fab.FloatingActionMenu
+                    android:id="@+id/floatingActionMenu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentBottom="true"
+                    android:layout_margin="10dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    app:layout_constraintBottom_toBottomOf="@+id/recyclerView"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:menu_fab_label=""
+                    app:menu_colorNormal="#7FFFD4"
+                    app:menu_colorPressed="#7FFFD4"
+                    app:menu_colorRipple="#7FFFD4"
+                    app:menu_openDirection="up"
+                    app:menu_showShadow="true">
+
+                    <com.github.clans.fab.FloatingActionButton
+                        android:id="@+id/fab1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/baseline_archive_24"
+                        app:fab_colorNormal="#7FFFD4"
+                        app:fab_colorPressed="#7FFFD4"
+                        app:fab_label="내 게시물 보기"
+                        app:fab_size="normal" />
+
+                    <com.github.clans.fab.FloatingActionButton
+                        android:id="@+id/fab2"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/baseline_draw_24"
+                        app:fab_colorNormal="#7FFFD4"
+                        app:fab_colorPressed="#7FFFD4"
+                        app:fab_label="새 게시물 작성"
+                        app:fab_size="normal" />
+
+                </com.github.clans.fab.FloatingActionMenu>
+
+
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </LinearLayout>

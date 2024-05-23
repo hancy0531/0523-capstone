@@ -20,7 +20,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.Volley
+import com.bumptech.glide.Glide
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -48,6 +50,7 @@ class Fragment_Viewpost : Fragment() {
     private lateinit var comment_btn: Button
     private lateinit var comment_text: EditText
     private lateinit var post_image: ImageView
+    private lateinit var writer_image: CircleImageView
     private lateinit var recyclerView: RecyclerView
     private lateinit var requestQueue: RequestQueue
     private var userEmail: String? = null
@@ -88,6 +91,10 @@ class Fragment_Viewpost : Fragment() {
         view.findViewById<TextView>(R.id.viewpost_date).text = post_date
         view.findViewById<TextView>(R.id.viewpost_title).text = post_title
         view.findViewById<TextView>(R.id.viewpost_content).text = post_content
+
+        //게시물 작성자 프로필 불러오기
+        writer_image = view.findViewById(R.id.writerImage)
+        post_writer?.let { getProfileImage(it) }
 
         //이미지 불러오기
         post_image = view.findViewById(R.id.viewpost_image)
@@ -182,6 +189,59 @@ class Fragment_Viewpost : Fragment() {
 
 
         return view
+    }
+
+    //게시물 작성자 프로필 이미지 가져오기
+    private fun getProfileImage(postWriter: String) {
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                val url = URL("http://10.0.2.2/getprofileimage.php")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "POST"
+                connection.doOutput = true
+
+                val postData = URLEncoder.encode("uemail", "UTF-8") + "=" + URLEncoder.encode(postWriter, "UTF-8")
+
+                val outputStream = OutputStreamWriter(connection.outputStream)
+                outputStream.write(postData)
+                outputStream.flush()
+                outputStream.close()
+
+                val responseCode = connection.responseCode
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    val inputStream = connection.inputStream
+                    val reader = BufferedReader(InputStreamReader(inputStream))
+                    val response = StringBuilder()
+                    var line: String?
+                    while (reader.readLine().also { line = it } != null) {
+                        response.append(line)
+                    }
+                    reader.close()
+                    inputStream.close()
+
+                    // 응답에서 이미지 URL 추출
+                    val jsonResponse = JSONObject(response.toString())
+                    if (jsonResponse.has("imageurl")) {
+                        val imageUrl = jsonResponse.getString("imageurl")
+
+                        // UI 스레드에서 Glide를 사용하여 이미지 로드
+                        withContext(Dispatchers.Main) {
+                            Glide.with(this@Fragment_Viewpost)
+                                .load(imageUrl)
+                                .into(writer_image)
+                        }
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(requireContext(), "No image URL found", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } else {
+                    Log.e("ImageUrl", "Failed to get image URL")
+                }
+            } catch (e: Exception) {
+                Log.e("ImageUrl", "Error loading image URL", e)
+            }
+        }
     }
 
     //댓글 추가하기

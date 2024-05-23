@@ -1,5 +1,6 @@
 package com.example.plant
 
+import android.Manifest
 import android.content.Intent
 import android.graphics.Bitmap
 import android.media.Image
@@ -28,11 +29,13 @@ import java.util.Locale
 import android.app.AlertDialog
 import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
+import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.ImageButton
 import com.google.gson.GsonBuilder
 import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
@@ -57,6 +60,28 @@ class Fragment_WriteFreePost : Fragment() {
     private var post_content: String? = null
     private var post_num: Int? = null
     private var task: String? = null
+
+    // 카메라 및 갤러리 권한 요청 코드
+    private val cameraPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+        if (isGranted) {
+            // 권한이 부여되었을 때의 처리
+            openCamera()
+        } else {
+            // 권한이 거부되었을 때의 처리
+            Toast.makeText(requireContext(), "카메라 접근 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private val galleryPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+        if (isGranted) {
+            // 권한이 부여되었을 때의 처리
+            openGallery()
+        } else {
+            // 권한이 거부되었을 때의 처리
+            Toast.makeText(requireContext(), "갤러리 접근 권한이 필요합니다.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
 
     //카메라 촬영 기능
     private val cameraLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -116,13 +141,21 @@ class Fragment_WriteFreePost : Fragment() {
                     when (which) {
                         0 -> {
                             // 카메라 촬영 기능 실행
-                            val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-                            cameraLauncher.launch(cameraIntent)
+                            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+
+//                            val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+//                            cameraLauncher.launch(cameraIntent)
                         }
                         1 -> {
                             // 갤러리에서 이미지 가져오기 기능 실행
-                            val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-                            galleryLauncher.launch(galleryIntent)
+                            //이미지 권한확인, sdk 33이상이면 READ_MEDIA_IMAGES, 이하면 READ_EXTERNAL_STORAGE
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                                galleryPermissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES)
+                            else
+                                galleryPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+
+//                            val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+//                            galleryLauncher.launch(galleryIntent)
                         }
                     }
                 }
@@ -185,13 +218,19 @@ class Fragment_WriteFreePost : Fragment() {
                     when (which) {
                         0 -> {
                             // 카메라 촬영 기능 실행
-                            val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-                            cameraLauncher.launch(cameraIntent)
+                            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+//                            val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+//                            cameraLauncher.launch(cameraIntent)
                         }
                         1 -> {
                             // 갤러리에서 이미지 가져오기 기능 실행
-                            val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-                            galleryLauncher.launch(galleryIntent)
+                            //이미지 권한확인, sdk 33이상이면 READ_MEDIA_IMAGES, 이하면 READ_EXTERNAL_STORAGE
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                                galleryPermissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES)
+                            else
+                                galleryPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+//                            val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+//                            galleryLauncher.launch(galleryIntent)
                         }
                     }
                 }
@@ -226,6 +265,19 @@ class Fragment_WriteFreePost : Fragment() {
         return view
     }
 
+    // 카메라 열기
+    private fun openCamera() {
+        val cameraIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        cameraLauncher.launch(cameraIntent)
+
+    }
+
+    // 갤러리 열기
+    private fun openGallery() {
+        val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        galleryLauncher.launch(galleryIntent)
+    }
+
 
     //retrofit으로 post 저장
     private fun insertPost(imageBitmap: Bitmap, writer: String, title: String, content: String) {
@@ -244,16 +296,16 @@ class Fragment_WriteFreePost : Fragment() {
             val byteArray = byteArrayOutputStream.toByteArray()
 
             // ByteArray를 RequestBody로 변환
-            val requestBody = RequestBody.create(MediaType.parse("image/*"), byteArray)
+            val requestBody = RequestBody.create("image/*".toMediaTypeOrNull(), byteArray)
 
             // RequestBody를 MultipartBody.Part로 변환
             val body = MultipartBody.Part.createFormData("image", "image.jpg", requestBody)
 
             // 문자열을 RequestBody로 변환
-            val boardtypeBody = RequestBody.create(MediaType.parse("text/plain"), board_type.toString())
-            val writerBody = RequestBody.create(MediaType.parse("text/plain"), writer)
-            val titleBody = RequestBody.create(MediaType.parse("text/plain"), title)
-            val contentBody = RequestBody.create(MediaType.parse("text/plain"), content)
+            val boardtypeBody = RequestBody.create("text/plain".toMediaTypeOrNull(), board_type.toString())
+            val writerBody = RequestBody.create("text/plain".toMediaTypeOrNull(), writer)
+            val titleBody = RequestBody.create("text/plain".toMediaTypeOrNull(), title)
+            val contentBody = RequestBody.create("text/plain".toMediaTypeOrNull(), content)
             //val dateBody = RequestBody.create(MediaType.parse("text/plain"), date)
 
             // apiService.insertpost 호출을 suspend 함수로 변경
@@ -335,17 +387,17 @@ class Fragment_WriteFreePost : Fragment() {
             val byteArray = byteArrayOutputStream.toByteArray()
 
             // ByteArray를 RequestBody로 변환
-            val requestBody = RequestBody.create(MediaType.parse("image/*"), byteArray)
+            val requestBody = RequestBody.create("image/*".toMediaTypeOrNull(), byteArray)
 
             // RequestBody를 MultipartBody.Part로 변환
             val body = MultipartBody.Part.createFormData("image", "image.jpg", requestBody)
 
             // 문자열을 RequestBody로 변환
-            val numBody = RequestBody.create(MediaType.parse("text/plain"), post_num.toString())
-            val boardtypeBody = RequestBody.create(MediaType.parse("text/plain"), board_type.toString())
-            val writerBody = RequestBody.create(MediaType.parse("text/plain"), writer)
-            val titleBody = RequestBody.create(MediaType.parse("text/plain"), title)
-            val contentBody = RequestBody.create(MediaType.parse("text/plain"), content)
+            val numBody = RequestBody.create("text/plain".toMediaTypeOrNull(), post_num.toString())
+            val boardtypeBody = RequestBody.create("text/plain".toMediaTypeOrNull(), board_type.toString())
+            val writerBody = RequestBody.create("text/plain".toMediaTypeOrNull(), writer)
+            val titleBody = RequestBody.create("text/plain".toMediaTypeOrNull(), title)
+            val contentBody = RequestBody.create("text/plain".toMediaTypeOrNull(), content)
             //val dateBody = RequestBody.create(MediaType.parse("text/plain"), date)
 
             // apiService.editpost 호출을 suspend 함수로 변경
